@@ -1,79 +1,80 @@
 import random
 
-class Node:
+class TreeNode:
     def __init__(self, key):
         self.key = key
         self.left = self.right = None
 
-def create_tree(n):
-    # Cria uma árvore binária com n números aleatórios de 0 a 100
-    numbers = random.sample(range(101), n)
-    root = Node(numbers[0])
+def in_order_traversal(root, result):
+    if root:
+        in_order_traversal(root.left, result)
+        result.append(root.key)
+        in_order_traversal(root.right, result)
+
+def create_random_tree(size):
+    import random
+    numbers = random.sample(range(0, 101), size)
+    root = TreeNode(numbers[0])
     for num in numbers[1:]:
         insert(root, num)
     return root
 
 def insert(root, key):
-    # Insere um novo nó na árvore
-    if root is None:
-        return Node(key)
+    if not root:
+        return TreeNode(key)
+    if key < root.key:
+        root.left = insert(root.left, key)
+    elif key > root.key:
+        root.right = insert(root.right, key)
+    return root
+
+def rotate_right(grandparent, parent, child):
+    if grandparent:
+        grandparent.left = parent.right
     else:
-        if key < root.key:
-            root.left = insert(root.left, key)
+        grandparent = parent.right
+
+    parent.right = child
+    return parent
+
+def create_backbone(root):
+    dummy = TreeNode(0)
+    dummy.right = root
+    current = dummy
+    while current.right:
+        if current.right.left:
+            current = rotate_right(current, current.right, current.right.left)
         else:
-            root.right = insert(root.right, key)
-    return root
-
-def dsw_balance(root):
-    # Implementação do Algoritmo DSW para balancear a árvore
-    nodes = []
-    in_order_traversal(root, nodes)
-    root = create_backbone(nodes)
-    root = create_balanced_tree(root, len(nodes))
-    return root
-
-def in_order_traversal(root, nodes):
-    # Percurso em ordem para preencher a lista de nós
-    if root:
-        in_order_traversal(root.left, nodes)
-        nodes.append(root)
-        in_order_traversal(root.right, nodes)
-
-def create_backbone(nodes):
-    # Cria a espinha dorsal (linear) da árvore
-    root = Node(0)
-    current = root
-    for node in nodes:
-        current.right = node
-        current = node
-    return root.right
+            current = current.right
+    return dummy.right
 
 def create_balanced_tree(root, size):
-    # Transforma a espinha dorsal em uma árvore balanceada
-    m = 2 ** (size.bit_length() - 1) - 1
-    make_rotations(root, size - m)
-    while m > 1:
-        m //= 2
-        make_rotations(root, m)
-    return root
+    backbone_root = create_backbone(root)
+    for _ in range(size - 1):
+        backbone_root = rotate_right(None, backbone_root, backbone_root.right)
+    return backbone_root
 
-def make_rotations(root, bound):
-    # Realiza rotações para balancear a árvore
-    parent = dummy = Node(0)
-    dummy.right = root
-    for _ in range(bound):
-        child = parent.right
-        if child and child.right:
-            parent.right = child.right
-            child.right = parent.right.left
-            parent.right.left = child
-            parent = parent.right.left
+def main():
+    # Passo 1: Criar uma árvore com 100 números aleatórios de 0 a 100
+    tree_size = 100
+    original_tree = create_random_tree(tree_size)
 
-# Usar as funções
-random.seed(42)  # Para reprodutibilidade
-initial_tree = create_tree(100)
+    # Passo 2: Acrescentar 20 números à árvore
+    for _ in range(20):
+        insert(original_tree, random.randint(0, 100))
 
-for _ in range(20):
-    insert(initial_tree, random.randint(0, 100))
+    # Passo 3: Aplicar o Algoritmo DSW para construir uma árvore binária balanceada
+    balanced_tree = create_balanced_tree(original_tree, tree_size + 20)
 
-balanced_tree = dsw_balance(initial_tree)
+    # Mostrar a árvore original e a nova árvore
+    original_tree_in_order = []
+    balanced_tree_in_order = []
+
+    in_order_traversal(original_tree, original_tree_in_order)
+    in_order_traversal(balanced_tree, balanced_tree_in_order)
+
+    print("Árvore Original:", original_tree_in_order)
+    print("Nova Árvore Balanceada:", balanced_tree_in_order)
+
+if __name__ == "__main__":
+    main()
