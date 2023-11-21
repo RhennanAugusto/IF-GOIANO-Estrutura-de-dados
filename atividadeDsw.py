@@ -55,18 +55,18 @@ def create_balanced_tree(root, size):
     return backbone_root
 
 def main():
-    # Passo 1: Criar uma árvore com 100 números aleatórios de 0 a 100
+    
     tree_size = 100
     original_tree = create_random_tree(tree_size)
 
-    # Passo 2: Acrescentar 20 números à árvore
+   
     for _ in range(20):
         insert(original_tree, random.randint(0, 100))
 
-    # Passo 3: Aplicar o Algoritmo DSW para construir uma árvore binária balanceada
+    
     balanced_tree = create_balanced_tree(original_tree, tree_size + 20)
 
-    # Mostrar a árvore original e a nova árvore
+    
     original_tree_in_order = []
     balanced_tree_in_order = []
 
